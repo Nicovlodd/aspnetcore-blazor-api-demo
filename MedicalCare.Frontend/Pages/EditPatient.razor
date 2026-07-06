@@ -1,0 +1,76 @@
+@page "/patients/edit/{id:int}"
+@using MedicalCare.Frontend.Models
+@using MedicalCare.Frontend.Services
+@inject PatientService patientService
+@inject NavigationManager navManager
+
+<h1>Editar Paciente</h1>
+<hr />
+
+@if (patient == null)
+{
+    <p><em>Cargando datos del paciente...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-6">
+            <EditForm Model="@patient" OnValidSubmit="UpdatePatient">
+                
+                <div class="mb-3">
+                    <label class="form-label">RUT</label>
+                    <InputText class="form-control" @bind-Value="patient.Patient_RUT" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Nombre</label>
+                    <InputText class="form-control" @bind-Value="patient.Patient_FirstName" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Apellido</label>
+                    <InputText class="form-control" @bind-Value="patient.Patient_LastName" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Fecha de Nacimiento</label>
+                    <InputDate class="form-control" @bind-Value="patient.Patient_DateOfBirth" required />
+                </div>
+
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                <button type="button" class="btn btn-secondary ms-2" @onclick="GoBack">Cancelar</button>
+
+            </EditForm>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    private Patient? patient;
+
+    // Se ejecuta al cargar la página para buscar los datos del paciente
+    protected override async Task OnInitializedAsync()
+    {
+        patient = await patientService.GetPatientByIdAsync(id);
+    }
+
+    private async Task UpdatePatient()
+    {
+        if (patient != null)
+        {
+            var success = await patientService.UpdatePatientAsync(id, patient);
+            if (success)
+            {
+                navManager.NavigateTo("/patients");
+            }
+        }
+    }
+
+    private void GoBack()
+    {
+        navManager.NavigateTo("/patients");
+    }
+}

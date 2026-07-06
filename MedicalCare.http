@@ -1,0 +1,60 @@
+@hostname = localhost
+# Asegúrate de que el puerto coincida con el que usa tu API al hacer dotnet run
+@port = 5175 
+@host = http://{{hostname}}:{{port}}/api
+@apiKey = ClinicaMedicalCareKey123123
+
+### ==========================================
+### ATENCIONES MÉDICAS (Appointments)
+### ==========================================
+
+### 1. Listar todas las atenciones (Incluye JOINs de nombres)
+GET {{host}}/Appointments
+x-api-key: {{apiKey}}
+
+### 2. Buscar atenciones (Filtro múltiple dinámico)
+GET {{host}}/Appointments/search?date=2026-06-06&doctor=doctest&patient=pacienteTest&speciality=Cirujano
+x-api-key: {{apiKey}}
+
+### 3. Reporte de Duración Promedio por Especialidad
+GET {{host}}/Appointments/average-duration
+x-api-key: {{apiKey}}
+
+### 4. Registrar una nueva atención médica
+POST {{host}}/Appointments
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{
+  "patientId": 1,
+  "doctorId": 3,
+  "appointment_StartUtc": "2026-06-08T10:00:00",
+  "appointment_EndUtc": "2026-06-08T11:00:00",
+  "appointment_Diagnosis": "Dolor de cabeza severo",
+  "appointment_Room": "Box 1",
+  "appointment_Status": "Agendada"
+}
+
+### ==========================================
+###  PACIENTES (Patients)
+### ==========================================
+
+### 5. Buscar pacientes por Rango de Edad, RUT o Nombre
+GET {{host}}/Patients/search?minAge=18&maxAge=65&name=Test
+x-api-key: {{apiKey}}
+
+### ==========================================
+### DOCTORES (Doctors)
+### ==========================================
+
+### 6. Listar todos los doctores
+GET {{host}}/Doctors
+x-api-key: {{apiKey}}
+
+### ==========================================
+### ESPECIALIDADES (Specialities)
+### ==========================================
+
+### 7. Listar especialidades
+GET {{host}}/Specialities
+x-api-key: {{apiKey}}

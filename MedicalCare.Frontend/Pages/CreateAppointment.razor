@@ -1,0 +1,98 @@
+@page "/appointments/new"
+@using MedicalCare.Frontend.Models
+@using MedicalCare.Frontend.Services
+@inject AppointmentService appointmentService
+@inject PatientService patientService
+@inject DoctorService doctorService
+@inject NavigationManager navManager
+
+<h1>Agendar Nueva Cita</h1>
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+       <EditForm Model="@appointment" OnValidSubmit="Save">
+            
+            <div class="mb-3">
+                <label class="form-label">Paciente</label>
+                <InputSelect class="form-select" @bind-Value="appointment.PatientId" required>
+                    <option value="">-- Seleccione un Paciente --</option>
+                    @if (patients != null)
+                    {
+                        @foreach (var pat in patients)
+                        {
+                            <option value="@pat.Patient_Id">@pat.Patient_RUT - @pat.Patient_FirstName</option>
+                        }
+                    }
+                </InputSelect>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Doctor</label>
+                <InputSelect class="form-select" @bind-Value="appointment.DoctorId" required>
+                    <option value="">-- Seleccione un Doctor --</option>
+                    @if (doctors != null)
+                    {
+                        @foreach (var doc in doctors)
+                        {
+                            <option value="@doc.Doctor_Id">Dr. @doc.Doctor_FirstName</option>
+                        }
+                    }
+                </InputSelect>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Fecha y Hora de Inicio</label>
+                    <input type="datetime-local" class="form-control" @bind="appointment.Appointment_StartUtc" required />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Fecha y Hora de Fin</label>
+                    <input type="datetime-local" class="form-control" @bind="appointment.Appointment_EndUtc" required />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Motivo (Diagnóstico Inicial)</label>
+                <InputTextArea class="form-control" @bind-Value="appointment.Appointment_Diagnosis" rows="3" required />
+            </div>
+
+            <button type="submit" class="btn btn-primary">Agendar Cita</button>
+            <button type="button" class="btn btn-secondary ms-2" @onclick="GoBack">Cancelar</button>
+
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private Appointment appointment = new Appointment();
+    private List<Patient>? patients;
+    private List<Doctor>? doctors;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Cargamos las listas para los menús desplegables
+        patients = await patientService.GetPatientsAsync();
+        doctors = await doctorService.GetDoctorsAsync();
+    }
+
+    private async Task Save()
+    {
+        var success = await appointmentService.CreateAppointmentAsync(appointment);
+        if (success)
+        {
+            navManager.NavigateTo("/appointments");
+        }
+        else
+        {
+            // Aquí podrías agregar un mensaje de error si el SP rechaza la cita por solapamiento
+            Console.WriteLine("Error: La cita se solapa o hubo un problema en el servidor.");
+        }
+    }
+
+    private void GoBack()
+    {
+        navManager.NavigateTo("/appointments");
+    }
+}

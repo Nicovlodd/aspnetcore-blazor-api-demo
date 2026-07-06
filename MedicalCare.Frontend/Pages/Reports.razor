@@ -1,0 +1,67 @@
+@page "/reports"
+@using MedicalCare.Frontend.Models
+@using MedicalCare.Frontend.Services
+@inject AppointmentService appointmentService
+
+<h1>Panel Revision Media de Duración de Atenciones</h1>
+<hr />
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Duración Promedio de Atenciones por Especialidad</h5>
+            </div>
+            <div class="card-body">
+                @if (reportData == null)
+                {
+                    <p><em>Calculando métricas en tiempo real...</em></p>
+                }
+                else if (!reportData.Any())
+                {
+                    <div class="alert alert-info">No hay datos suficientes para calcular promedios.</div>
+                }
+                else
+                {
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Especialidad médica</th>
+                                <th class="text-end">Tiempo Promedio</th>
+                                <th>Eficiencia sugerida</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in reportData)
+                            {
+                                <tr>
+                                    <td class="fw-bold text-secondary">@item.SpecialityName</td>
+                                    <td class="text-end fw-bold text-primary">@item.AverageDurationMinutes min</td>
+                                    <td>
+                                        @if (item.AverageDurationMinutes > 90)
+                                        {
+                                            <span class="badge bg-warning text-dark">Sesión Extendida</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">Estándar Óptimo</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<SpecialityDurationReport>? reportData;
+
+    protected override async Task OnInitializedAsync()
+    {
+        reportData = await appointmentService.GetAverageDurationReportAsync();
+    }
+}

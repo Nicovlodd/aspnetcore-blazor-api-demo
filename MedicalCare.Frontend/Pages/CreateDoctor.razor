@@ -1,0 +1,71 @@
+@page "/doctors/new"
+@using MedicalCare.Frontend.Models
+@using MedicalCare.Frontend.Services
+@inject DoctorService doctorService
+@inject SpecialityService specialityService
+@inject NavigationManager navManager
+
+<h1>Registrar Nuevo Doctor</h1>
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <EditForm Model="@doctor" OnValidSubmit="Save">
+            
+            <div class="mb-3">
+                <label>RUT</label>
+                <InputText class="form-control" @bind-Value="doctor.Doctor_RUT" required />
+            </div>
+
+            <div class="mb-3">
+                <label>Nombre</label>
+                <InputText class="form-control" @bind-Value="doctor.Doctor_FirstName" required />
+            </div>
+
+            <div class="mb-3">
+                <label>Apellido</label>
+                <InputText class="form-control" @bind-Value="doctor.Doctor_LastName" required />
+            </div>
+
+            <div class="mb-3">
+                <label>Especialidad</label>
+                <InputSelect class="form-select" @bind-Value="doctor.Speciality_Id" required>
+                    <option value="">-- Seleccione una Especialidad --</option>
+                    @if (specialities != null)
+                    {
+                        @foreach (var spec in specialities)
+                        {
+                            <option value="@spec.Speciality_Id">@spec.Speciality_Name</option>
+                        }
+                    }
+                </InputSelect>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <button type="button" class="btn btn-secondary ms-2" @onclick="GoBack">Cancelar</button>
+
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private Doctor doctor = new Doctor();
+    private List<Speciality>? specialities; // Para guardar la lista del menú
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Al cargar la página, traemos todas las especialidades de la base de datos
+        specialities = await specialityService.GetSpecialitiesAsync();
+    }
+
+    private async Task Save()
+    {
+        var success = await doctorService.CreateDoctorAsync(doctor);
+        if (success) navManager.NavigateTo("/doctors");
+    }
+
+    private void GoBack()
+    {
+        navManager.NavigateTo("/doctors");
+    }
+}

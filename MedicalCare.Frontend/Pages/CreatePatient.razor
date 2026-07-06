@@ -1,0 +1,64 @@
+@page "/patients/new"
+@using MedicalCare.Frontend.Models
+@using MedicalCare.Frontend.Services
+@inject PatientService patientService
+@inject NavigationManager navManager
+
+<h1>Registrar Nuevo Paciente</h1>
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <EditForm Model="@patient" OnValidSubmit="SavePatient">
+            
+            <div class="mb-3">
+                <label class="form-label">RUT</label>
+                <InputText class="form-control" @bind-Value="patient.Patient_RUT" placeholder="12345678-9" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Nombre</label>
+                <InputText class="form-control" @bind-Value="patient.Patient_FirstName" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Apellido</label>
+                <InputText class="form-control" @bind-Value="patient.Patient_LastName" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Fecha de Nacimiento</label>
+                <InputDate class="form-control" @bind-Value="patient.Patient_DateOfBirth" required />
+            </div>
+
+            <button type="submit" class="btn btn-primary">Guardar Paciente</button>
+            <button type="button" class="btn btn-secondary ms-2" @onclick="GoBack">Cancelar</button>
+
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    // Instanciamos un paciente vacío para conectar con los inputs
+    private Patient patient = new Patient { Patient_DateOfBirth = DateTime.Today };
+
+    private async Task SavePatient()
+    {
+        var success = await patientService.CreatePatientAsync(patient);
+        if (success)
+        {
+            // Si la API responde con un 201 (Creado), volvemos a la lista
+            navManager.NavigateTo("/patients");
+        }
+        else
+        {
+            // Aquí podrías mostrar un error si el RUT está duplicado
+            Console.WriteLine("Error al guardar el paciente.");
+        }
+    }
+
+    private void GoBack()
+    {
+        navManager.NavigateTo("/patients");
+    }
+}

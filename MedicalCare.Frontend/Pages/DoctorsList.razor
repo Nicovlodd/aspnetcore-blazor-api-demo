@@ -1,0 +1,73 @@
+@page "/doctors"
+@using MedicalCare.Frontend.Models
+@using MedicalCare.Frontend.Services
+@inject DoctorService doctorService
+@inject IJSRuntime JS
+
+<h1>Gestión de Doctores</h1>
+<hr />
+
+<a href="/doctors/new" class="btn btn-success mb-3">+ Nuevo Doctor</a>
+
+@if (doctors == null)
+{
+    <p><em>Cargando doctores...</em></p>
+}
+else if (!doctors.Any())
+{
+    <div class="alert alert-warning">No hay doctores registrados.</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>RUT</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Especialidad</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var doc in doctors)
+            {
+                <tr>
+                    <td>@doc.Doctor_Id</td>
+                    <td>@doc.Doctor_RUT</td>
+                    <td>@doc.Doctor_FirstName</td>
+                    <td>@doc.Doctor_LastName</td>
+                    <td>@doc.Speciality_Name</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger ms-1" @onclick="() => ConfirmDelete(doc.Doctor_Id, doc.Doctor_FirstName)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Doctor>? doctors;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDoctors();
+    }
+
+    private async Task LoadDoctors()
+    {
+        doctors = await doctorService.GetDoctorsAsync();
+    }
+
+    private async Task ConfirmDelete(int id, string name)
+    {
+        bool confirmed = await JS.InvokeAsync<bool>("confirm", $"¿Eliminar al Dr. {name}?");
+        if (confirmed)
+        {
+            var success = await doctorService.DeleteDoctorAsync(id);
+            if (success) await LoadDoctors();
+        }
+    }
+}

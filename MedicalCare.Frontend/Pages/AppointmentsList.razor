@@ -1,0 +1,119 @@
+@page "/appointments"
+@using MedicalCare.Frontend.Models
+@using MedicalCare.Frontend.Services
+@inject AppointmentService appointmentService
+@inject IJSRuntime JS
+
+<h1>Gestión de Citas Médicas</h1>
+<hr />
+
+
+<div class="card mb-4 bg-light">
+    <div class="card-body">
+        <h5>🔍 Buscar Atenciones (Filtro Múltiple)</h5>
+        <div class="row g-3">
+            <div class="col-md-2">
+                <input type="date" class="form-control" @bind="searchDate" />
+            </div>
+            <div class="col-md-2">
+                <input type="text" class="form-control" placeholder="Paciente..." @bind="searchPatient" />
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control" placeholder="Doctor..." @bind="searchDoctor" />
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control" placeholder="Especialidad..." @bind="searchSpeciality" />
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button class="btn btn-primary w-100" @onclick="ExecuteSearch">Buscar</button>
+                <button class="btn btn-secondary w-100" @onclick="ClearSearch">Limpiar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<a href="/appointments/new" class="btn btn-success mb-3">+ Agendar Cita</a>
+
+@if (appointments == null)
+{
+    <p><em>Cargando citas...</em></p>
+}
+else if (!appointments.Any())
+{
+    <div class="alert alert-warning">No hay citas registradas en el sistema.</div>
+}
+else
+{
+    <table class="table table-striped">
+<thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Inicio</th>
+                <th>Fin</th>
+                <th>Paciente</th>
+                <th>Doctor</th>
+                <th>Especialidad</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var appt in appointments)
+            {
+                <tr>
+                    <td>@appt.Appointment_Id</td>
+                    <td>@appt.Appointment_StartUtc.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@appt.Appointment_EndUtc.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@appt.Patient_Name</td>
+                    <td>@appt.Doctor_Name</td>
+                    <td>@appt.Speciality_Name</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger ms-1" @onclick="() => ConfirmDelete(appt.Appointment_Id)">Cancelar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Appointment>? appointments;
+
+    private DateTime? searchDate;
+    private string? searchPatient;
+    private string? searchDoctor;
+    private string? searchSpeciality;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAppointments();
+    }
+
+    private async Task LoadAppointments()
+    {
+        appointments = await appointmentService.GetAppointmentsAsync();
+    }
+
+    private async Task ExecuteSearch()
+    {
+        appointments = await appointmentService.SearchAppointmentsAsync(searchDate, searchDoctor, searchPatient, searchSpeciality);
+    }
+
+    private async Task ClearSearch()
+    {
+        searchDate = null;
+        searchPatient = null;
+        searchDoctor = null;
+        searchSpeciality = null;
+        await LoadAppointments();
+    }
+
+    private async Task ConfirmDelete(int id)
+    {
+        bool confirmed = await JS.InvokeAsync<bool>("confirm", "¿Seguro que deseas cancelar esta cita?");
+        if (confirmed)
+        {
+            var success = await appointmentService.DeleteAppointmentAsync(id);
+            if (success) await LoadAppointments();
+        }
+    }
+}
