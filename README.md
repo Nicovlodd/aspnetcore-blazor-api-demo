@@ -34,7 +34,7 @@ Todos los endpoints de la API están protegidos contra accesos no autorizados. S
 
 Para probar desde Swagger:
 1. Al ingresar a Swagger, haz clic en el botón verde **Authorize** (arriba a la derecha).
-2. Ingresa la siguiente clave de acceso: `ClinicaMedicalCareSecretKey2026`
+2. cambie la clave de acceso en el archivo MedicalCare.API/appsetings.json: `TEST_API_KEY`
 *(Esta clave está configurada en el archivo `appsettings.json` y puede ser modificada si se requiere).*
 
 ##  Instrucciones de Setup y Ejecución
